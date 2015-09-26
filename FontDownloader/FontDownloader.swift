@@ -18,6 +18,26 @@ public extension UIFont {
     public typealias DownloadProgressHandler = (downloadedSize: Int, totalSize: Int, percentage: Int) -> Void
     public typealias DownloadCompletionHandler = (font: UIFont?) -> Void
     
+    public class func downloadableFontNames() -> [String] {
+        let downloadableDescriptor = CTFontDescriptorCreateWithAttributes([
+            (kCTFontDownloadableAttribute as NSString): kCFBooleanTrue
+            ])
+        guard let matchedDescriptors = CTFontDescriptorCreateMatchingFontDescriptors(downloadableDescriptor, nil) else {
+            return []
+        }
+        let numberOfFonts = CFArrayGetCount(matchedDescriptors)
+        var fontNames = [String]()
+        for index in 0 ..< numberOfFonts {
+            let descriptor = unsafeBitCast(CFArrayGetValueAtIndex(matchedDescriptors, index), CTFontDescriptor.self)
+            let attributes = CTFontDescriptorCopyAttributes(descriptor) as NSDictionary
+            guard let name = attributes[kCTFontNameAttribute as String] as? String else {
+                continue
+            }
+            fontNames.append(name)
+        }
+        return fontNames
+    }
+    
     public class func fontExists(name: String) -> Bool {
         return UIFont(name: name, size: UndefinedFontSize) != nil
     }
