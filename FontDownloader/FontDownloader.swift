@@ -22,20 +22,13 @@ public extension UIFont {
         let downloadableDescriptor = CTFontDescriptorCreateWithAttributes([
             (kCTFontDownloadableAttribute as NSString): kCFBooleanTrue
             ])
-        guard let matchedDescriptors = CTFontDescriptorCreateMatchingFontDescriptors(downloadableDescriptor, nil) else {
+        guard let cfMatchedDescriptors = CTFontDescriptorCreateMatchingFontDescriptors(downloadableDescriptor, nil), matchedDescriptors = (cfMatchedDescriptors as NSArray) as? [CTFontDescriptor] else {
             return []
         }
-        let numberOfFonts = CFArrayGetCount(matchedDescriptors)
-        var fontNames = [String]()
-        for index in 0 ..< numberOfFonts {
-            let descriptor = unsafeBitCast(CFArrayGetValueAtIndex(matchedDescriptors, index), CTFontDescriptor.self)
+        return matchedDescriptors.flatMap { (descriptor) -> String? in
             let attributes = CTFontDescriptorCopyAttributes(descriptor) as NSDictionary
-            guard let name = attributes[kCTFontNameAttribute as String] as? String else {
-                continue
-            }
-            fontNames.append(name)
+            return attributes[kCTFontNameAttribute as String] as? String
         }
-        return fontNames
     }
     
     public class func fontExists(name: String) -> Bool {
@@ -67,10 +60,10 @@ public extension UIFont {
         }
         let wrappedProgressHandler = { (param: NSDictionary) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                let downloadedSize = param[kCTFontDescriptorMatchingTotalDownloadedSize as String] as? Int
-                let totalSize = param[kCTFontDescriptorMatchingTotalAssetSize as String] as? Int
-                let percentage = param[kCTFontDescriptorMatchingPercentage as String] as? Int
-                progress?(downloadedSize: downloadedSize ?? 0, totalSize: totalSize ?? 0, percentage: percentage ?? 0)
+                let downloadedSize = param[kCTFontDescriptorMatchingTotalDownloadedSize as String] as? Int ?? 0
+                let totalSize = param[kCTFontDescriptorMatchingTotalAssetSize as String] as? Int ?? 0
+                let percentage = param[kCTFontDescriptorMatchingPercentage as String] as? Int ?? 0
+                progress?(downloadedSize: downloadedSize, totalSize: totalSize, percentage: percentage)
             })
         }
         CTFontDescriptorMatchFontDescriptorsWithProgressHandler([

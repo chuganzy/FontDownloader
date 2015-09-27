@@ -9,7 +9,7 @@
 @import Foundation;
 
 //! Project version number for FontDownloader.
-FOUNDATION_EXPORT double FontDownloaderVersionNumber;
+FOUNDATION_EXPORT const double FontDownloaderVersionNumber;
 
 //! Project version string for FontDownloader.
 FOUNDATION_EXPORT const unsigned char FontDownloaderVersionString[];
